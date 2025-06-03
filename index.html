@@ -359,6 +359,7 @@
 
       matchNextBtn.style.display = "none";
       matchNextBtn.disabled = true;
+      checkBtn.disabled = true; // Disable Check button initially
       resultMessage.textContent = "";
 
       cards.forEach((card) => {
@@ -424,6 +425,11 @@
       dragged.style.display = "none";
 
       dragged = null;
+
+      // Check if all drop targets have overlays
+      const drops = kannadaRow.querySelectorAll(".match-card");
+      const allFilled = Array.from(drops).every(drop => drop.querySelector('.overlay'));
+      checkBtn.disabled = !allFilled; // Enable Check button only if all cards have overlays
     }
 
     function checkMatch() {
@@ -454,7 +460,7 @@
         matchNextBtn.style.display = "inline-block";
         matchNextBtn.disabled = false;
       } else {
-        resultMessage.textContent = "Some matches are incorrect or missing. Try again or retake.";
+        resultMessage.textContent = "Some matches are incorrect or missing. Try again";
       }
     }
 
@@ -470,7 +476,7 @@
         }
         drop.classList.remove('correct');
       });
-      checkBtn.disabled = false;
+      checkBtn.disabled = true; // Disable Check button after reset
       matchNextBtn.style.display = "none";
       matchNextBtn.disabled = true;
       resultMessage.textContent = "";
