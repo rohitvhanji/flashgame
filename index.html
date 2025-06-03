@@ -129,6 +129,11 @@
       border-color: #27ae60 !important;
     }
 
+    .incorrect {
+      border: 2px dotted #e74c3c !important;
+      background-color: #f9e6e6 !important;
+    }
+
     .instructions {
       font-size: 14px;
       color: #666;
@@ -462,9 +467,10 @@
       drops.forEach(drop => {
         const kn = drop.getAttribute("data-kn");
         const overlay = drop.querySelector(".overlay");
+        drop.classList.remove('correct', 'incorrect'); // Clear previous styles
         if (!overlay) {
           allCorrect = false;
-          drop.classList.remove('correct');
+          drop.classList.add('incorrect');
           return;
         }
         const hi = overlay.textContent;
@@ -473,7 +479,7 @@
           drop.classList.add("correct");
         } else {
           allCorrect = false;
-          drop.classList.remove('correct');
+          drop.classList.add("incorrect");
         }
       });
 
@@ -497,7 +503,7 @@
           if (drag) drag.style.display = "flex";
           overlay.remove();
         }
-        drop.classList.remove('correct');
+        drop.classList.remove('correct', 'incorrect');
       });
       checkBtn.disabled = true;
       matchNextBtn.style.display = "none";
