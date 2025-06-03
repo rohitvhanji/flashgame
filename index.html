@@ -47,7 +47,7 @@
     }
 
     .navigation-buttons {
-      margin-bottom: 20px;
+      margin: 20px 0;
     }
 
     button {
@@ -59,9 +59,15 @@
       color: white;
       cursor: pointer;
       margin: 0 8px;
+      min-width: 90px;
     }
 
-    button:hover {
+    button:disabled {
+      background-color: #95a5a6;
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
       background-color: #1c5980;
     }
 
@@ -92,6 +98,7 @@
       border-radius: 14px;
       cursor: pointer;
       position: relative;
+      user-select: none;
     }
 
     .match-card .overlay {
@@ -121,9 +128,25 @@
       margin-top: 16px;
     }
 
-    .progress {
-      font-size: 18px;
-      margin-top: 10px;
+    /* Progress bar container */
+    .progress-bar-container {
+      width: 90%;
+      max-width: 600px;
+      height: 25px;
+      background-color: #ddd;
+      border-radius: 12px;
+      margin: 12px auto 24px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    /* Progress bar fill */
+    .progress-bar-fill {
+      height: 100%;
+      background-color: #3498db;
+      width: 0%;
+      border-radius: 12px 0 0 12px;
+      transition: width 0.3s ease;
     }
 
     @media (max-width: 600px) {
@@ -148,31 +171,36 @@
 <body>
 
   <h1>Kannada Flashcard Game</h1>
-  <div class="progress" id="progress">Card 1 / 5</div>
+
+  <div class="progress-bar-container" aria-label="Flashcard progress">
+    <div class="progress-bar-fill" id="progressBar"></div>
+  </div>
+  <div class="progress" id="progressText">Card 1 / 5</div>
 
   <div class="flashcard-container" id="flashcardContainer">
-    <div id="flashcard" class="flashcard">ಅ</div>
+    <div id="flashcard" class="flashcard" tabindex="0" role="button" aria-pressed="false" aria-label="Flashcard displaying Kannada character ಅ">ಅ</div>
   </div>
 
   <div class="navigation-buttons" id="flashButtons">
-    <button onclick="prevCard()">Previous</button>
-    <button onclick="nextCard()">Next</button>
+    <button onclick="prevCard()" id="prevBtn" aria-label="Previous card">Previous</button>
+    <button onclick="nextCard()" id="nextBtn" aria-label="Next card">Next</button>
   </div>
 
   <div id="matchGame" style="display: none;">
     <h2>Match Kannada to Hindi</h2>
-    <div class="match-zone">
-      <div class="match-row" id="kannadaRow"></div>
-      <div class="match-row" id="hindiRow"></div>
+    <div class="match-zone" aria-label="Matching game area">
+      <div class="match-row" id="kannadaRow" aria-label="Kannada characters, drop targets"></div>
+      <div class="match-row" id="hindiRow" aria-label="Hindi characters, draggable items"></div>
     </div>
     <div class="navigation-buttons">
-      <button onclick="prevCard()">Prev</button>
-      <button onclick="checkMatch()">Check</button>
-      <button onclick="resetMatch()">Retake</button>
+      <button onclick="prevCard()" id="matchPrevBtn" aria-label="Previous card">Prev</button>
+      <button onclick="checkMatch()" id="checkBtn" aria-label="Check matches">Check</button>
+      <button onclick="resetMatch()" id="retakeBtn" aria-label="Retake matching game">Retake</button>
+      <button onclick="nextCard()" id="matchNextBtn" aria-label="Next card" style="display:none;" disabled>Next</button>
     </div>
   </div>
 
-  <div class="instructions">
+  <div class="instructions" aria-live="polite">
     Use ← / → to Navigate | ↑ / ↓ to Flip Card | Match Hindi by dragging to Kannada row
   </div>
 
@@ -187,17 +215,28 @@
     let flipped = false;
 
     const flashcard = document.getElementById("flashcard");
-    const progress = document.getElementById("progress");
+    const progressText = document.getElementById("progressText");
+    const progressBar = document.getElementById("progressBar");
     const flashcardContainer = document.getElementById("flashcardContainer");
     const flashButtons = document.getElementById("flashButtons");
     const matchGame = document.getElementById("matchGame");
     const kannadaRow = document.getElementById("kannadaRow");
     const hindiRow = document.getElementById("hindiRow");
 
+    const matchNextBtn = document.getElementById("matchNextBtn");
+    const checkBtn = document.getElementById("checkBtn");
+
     function updateFlashcard() {
       const card = cards[currentIndex];
       flashcard.textContent = flipped ? card.hi : card.kn;
-      progress.textContent = `Card ${currentIndex + 1} / ${cards.length}`;
+      flashcard.setAttribute('aria-label', `Flashcard displaying ${flipped ? 'Hindi' : 'Kannada'} character ${flashcard.textContent}`);
+      progressText.textContent = `Card ${currentIndex + 1} / ${cards.length}`;
+      const progressPercent = ((currentIndex) / (cards.length - 1)) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      // Disable prev button on first card
+      document.getElementById("prevBtn").disabled = currentIndex === 0;
+      document.getElementById("nextBtn").disabled = false;
     }
 
     function flipCard() {
@@ -207,13 +246,21 @@
 
     function prevCard() {
       if (matchGame.style.display === "block") {
+        // From match game to flashcards - last card
         matchGame.style.display = "none";
         flashcardContainer.style.display = "flex";
         flashButtons.style.display = "block";
+        document.querySelector(".progress-bar-container").style.display = "block";
+        progressText.style.display = "block";
+
         currentIndex = cards.length - 1;
         flipped = false;
         updateFlashcard();
-        document.querySelector(".progress").style.display = "block";
+
+        // Hide match game Next button for next time
+        matchNextBtn.style.display = "none";
+        matchNextBtn.disabled = true;
+
         return;
       }
 
@@ -225,13 +272,35 @@
     }
 
     function nextCard() {
-      if (currentIndex < cards.length - 1) {
-        currentIndex++;
-        flipped = false;
-        updateFlashcard();
+      if (matchGame.style.display === "block") {
+        // In match game, next button visible only after correct, so just proceed normally
+        if (currentIndex < cards.length - 1) {
+          currentIndex++;
+          flipped = false;
+          showFlashcards();
+          updateFlashcard();
+        }
       } else {
-        startMatchGame();
+        if (currentIndex < cards.length - 1) {
+          currentIndex++;
+          flipped = false;
+          updateFlashcard();
+        } else {
+          // Start match game after last card flashcard
+          startMatchGame();
+        }
       }
+    }
+
+    function showFlashcards() {
+      flashcardContainer.style.display = "flex";
+      flashButtons.style.display = "block";
+      document.querySelector(".progress-bar-container").style.display = "block";
+      progressText.style.display = "block";
+      matchGame.style.display = "none";
+      matchNextBtn.style.display = "none";
+      matchNextBtn.disabled = true;
+      checkBtn.disabled = false;
     }
 
     flashcard.addEventListener('click', flipCard);
@@ -245,11 +314,16 @@
     function startMatchGame() {
       flashcardContainer.style.display = "none";
       flashButtons.style.display = "none";
+      document.querySelector(".progress-bar-container").style.display = "none";
+      progressText.style.display = "none";
       matchGame.style.display = "block";
-      document.querySelector(".progress").style.display = "none";
 
       kannadaRow.innerHTML = '';
       hindiRow.innerHTML = '';
+
+      // Reset Next button
+      matchNextBtn.style.display = "none";
+      matchNextBtn.disabled = true;
 
       cards.forEach((card) => {
         const drop = document.createElement("div");
@@ -291,18 +365,33 @@
 
     function checkMatch() {
       const zones = document.querySelectorAll('#kannadaRow .match-card');
+      let allCorrect = true;
+
       zones.forEach(zone => {
         const overlay = zone.querySelector('.overlay');
         if (overlay && overlay.textContent === zone.dataset.answer) {
           zone.classList.add('correct');
         } else {
           zone.classList.remove('correct');
+          allCorrect = false;
         }
       });
+
+      if (allCorrect) {
+        checkBtn.disabled = true;
+        matchNextBtn.style.display = "inline-block";
+        matchNextBtn.disabled = false;
+      } else {
+        matchNextBtn.style.display = "none";
+        matchNextBtn.disabled = true;
+      }
     }
 
     function resetMatch() {
       startMatchGame();
+      checkBtn.disabled = false;
+      matchNextBtn.style.display = "none";
+      matchNextBtn.disabled = true;
     }
 
     updateFlashcard();
