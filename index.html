@@ -193,7 +193,7 @@
   <div class="progress-bar-container" aria-label="Flashcard progress">
     <div class="progress-bar-fill" id="progressBar"></div>
   </div>
-  <div class="progress" id="progressText">Card 1 / 5</div>
+  <div class="progress" id="progressText">Card 1 / 52</div>
 
   <div class="flashcard-container" id="flashcardContainer">
     <div id="flashcard" class="flashcard" tabindex="0" role="button" aria-pressed="false" aria-label="Flashcard displaying Kannada character ಅ">ಅ</div>
@@ -224,48 +224,47 @@
   </div>
 
   <script>
-
     const cardSets = [
-  // Swaragalu (Vowels)
-  [
-    { kn: 'ಅ', hi: 'अ' }, { kn: 'ಆ', hi: 'आ' },
-    { kn: 'ಇ', hi: 'इ' }, { kn: 'ಈ', hi: 'ई' },
-    { kn: 'ಉ', hi: 'उ' }, { kn: 'ಊ', hi: 'ऊ' },
-    { kn: 'ಋ', hi: 'ऋ' }, { kn: 'ೠ', hi: 'ॠ' },
-    { kn: 'ಎ', hi: 'ए' }, { kn: 'ಏ', hi: 'ऐ' },
-    { kn: 'ಐ', hi: 'ऐ' }, { kn: 'ಒ', hi: 'ओ' },
-    { kn: 'ಓ', hi: 'औ' }, { kn: 'ಔ', hi: 'औ' },
-    { kn: 'ಅಂ', hi: 'अं' }, { kn: 'ಅಃ', hi: 'अः' }
-  ],
+      // Swaragalu (Vowels)
+      [
+        { kn: 'ಅ', hi: 'अ' }, { kn: 'ಆ', hi: 'आ' },
+        { kn: 'ಇ', hi: 'इ' }, { kn: 'ಈ', hi: 'ई' },
+        { kn: 'ಉ', hi: 'उ' }, { kn: 'ಊ', hi: 'ऊ' },
+        { kn: 'ಋ', hi: 'ऋ' }, { kn: 'ೠ', hi: 'ॠ' },
+        { kn: 'ಎ', hi: 'ए' }, { kn: 'ಏ', hi: 'ऐ' },
+        { kn: 'ಐ', hi: 'ऐ' }, { kn: 'ಒ', hi: 'ओ' },
+        { kn: 'ಓ', hi: 'औ' }, { kn: 'ಔ', hi: 'औ' },
+        { kn: 'ಅಂ', hi: 'अं' }, { kn: 'ಅಃ', hi: 'अः' }
+      ],
+      // Vyanjanagalu (Consonants)
+      [
+        { kn: 'ಕ', hi: 'क' }, { kn: 'ಖ', hi: 'ख' },
+        { kn: 'ಗ', hi: 'ग' }, { kn: 'ಘ', hi: 'घ' },
+        { kn: 'ಙ', hi: 'ङ' }, { kn: 'ಚ', hi: 'च' },
+        { kn: 'ಛ', hi: 'छ' }, { kn: 'ಜ', hi: 'ज' },
+        { kn: 'ಝ', hi: 'झ' }, { kn: 'ಞ', hi: 'ञ' },
+        { kn: 'ಟ', hi: 'ट' }, { kn: 'ಠ', hi: 'ठ' },
+        { kn: 'ಡ', hi: 'ड' }, { kn: 'ಢ', hi: 'ढ' },
+        { kn: 'ಣ', hi: 'ण' }, { kn: 'ತ', hi: 'त' },
+        { kn: 'ಥ', hi: 'थ' }, { kn: 'ದ', hi: 'द' },
+        { kn: 'ಧ', hi: 'ध' }, { kn: 'ನ', hi: 'न' },
+        { kn: 'ಪ', hi: 'प' }, { kn: 'ಫ', hi: 'फ' },
+        { kn: 'ಬ', hi: 'ब' }, { kn: 'ಭ', hi: 'भ' },
+        { kn: 'ಮ', hi: 'म' }, { kn: 'ಯ', hi: 'य' },
+        { kn: 'ರ', hi: 'र' }, { kn: 'ಲ', hi: 'ल' },
+        { kn: 'ವ', hi: 'व' }, { kn: 'ಶ', hi: 'श' },
+        { kn: 'ಷ', hi: 'ष' }, { kn: 'ಸ', hi: 'स' },
+        { kn: 'ಹ', hi: 'ह' }, { kn: 'ಳ', hi: 'ळ' },
+        { kn: 'ಕ್ಷ', hi: 'क्ष' }, { kn: 'ಜ್ಞ', hi: 'ज्ञ' }
+      ]
+    ];
 
-  // Vyanjanagalu (Consonants)
-  [
-    { kn: 'ಕ', hi: 'क' }, { kn: 'ಖ', hi: 'ख' },
-    { kn: 'ಗ', hi: 'ग' }, { kn: 'ಘ', hi: 'घ' },
-    { kn: 'ಙ', hi: 'ङ' }, { kn: 'ಚ', hi: 'च' },
-    { kn: 'ಛ', hi: 'छ' }, { kn: 'ಜ', hi: 'ज' },
-    { kn: 'ಝ', hi: 'झ' }, { kn: 'ಞ', hi: 'ञ' },
-    { kn: 'ಟ', hi: 'ट' }, { kn: 'ಠ', hi: 'ठ' },
-    { kn: 'ಡ', hi: 'ड' }, { kn: 'ಢ', hi: 'ढ' },
-    { kn: 'ಣ', hi: 'ण' }, { kn: 'ತ', hi: 'त' },
-    { kn: 'ಥ', hi: 'थ' }, { kn: 'ದ', hi: 'द' },
-    { kn: 'ಧ', hi: 'ध' }, { kn: 'ನ', hi: 'न' },
-    { kn: 'ಪ', hi: 'प' }, { kn: 'ಫ', hi: 'फ' },
-    { kn: 'ಬ', hi: 'ब' }, { kn: 'ಭ', hi: 'भ' },
-    { kn: 'ಮ', hi: 'म' }, { kn: 'ಯ', hi: 'य' },
-    { kn: 'ರ', hi: 'र' }, { kn: 'ಲ', hi: 'ल' },
-    { kn: 'ವ', hi: 'व' }, { kn: 'ಶ', hi: 'श' },
-    { kn: 'ಷ', hi: 'ष' }, { kn: 'ಸ', hi: 'स' },
-    { kn: 'ಹ', hi: 'ह' }, { kn: 'ಳ', hi: 'ळ' },
-    { kn: 'ಕ್ಷ', hi: 'क्ष' }, { kn: 'ಜ್ಞ', hi: 'ज्ञ' }
-  ]
-];
-
-
-    let currentSetIndex = 0;
-    let cards = cardSets[currentSetIndex];
+    // Flatten card sets to calculate total characters
+    const allCards = cardSets.flat();
+    const totalCards = allCards.length;
     let currentIndex = 0;
     let flipped = false;
+    let matchTestCards = [];
 
     const flashcard = document.getElementById("flashcard");
     const progressText = document.getElementById("progressText");
@@ -280,15 +279,15 @@
     const resultMessage = document.getElementById("resultMessage");
 
     function updateFlashcard() {
-      const card = cards[currentIndex];
+      const card = allCards[currentIndex];
       flashcard.textContent = flipped ? card.hi : card.kn;
       flashcard.setAttribute('aria-label', `Flashcard displaying ${flipped ? 'Hindi' : 'Kannada'} character ${flashcard.textContent}`);
-      progressText.textContent = `Card ${currentIndex + 1} / ${cards.length} (Set ${currentSetIndex + 1} / ${cardSets.length})`;
-      const progressPercent = ((currentIndex) / (cards.length - 1)) * 100;
+      progressText.textContent = `Card ${currentIndex + 1} / ${totalCards}`;
+      const progressPercent = (currentIndex / (totalCards - 1)) * 100;
       progressBar.style.width = `${progressPercent}%`;
 
       document.getElementById("prevBtn").disabled = currentIndex === 0;
-      document.getElementById("nextBtn").disabled = false;
+      document.getElementById("nextBtn").disabled = currentIndex === totalCards - 1;
     }
 
     function flipCard() {
@@ -304,7 +303,7 @@
         document.querySelector(".progress-bar-container").style.display = "block";
         progressText.style.display = "block";
 
-        currentIndex = cards.length - 1;
+        currentIndex = Math.max(0, currentIndex - 5); // Go back to start of current batch
         flipped = false;
         updateFlashcard();
 
@@ -318,34 +317,30 @@
         currentIndex--;
         flipped = false;
         updateFlashcard();
-      } else if (currentSetIndex > 0) {
-        currentSetIndex--;
-        cards = cardSets[currentSetIndex];
-        currentIndex = cards.length - 1;
-        flipped = false;
-        updateFlashcard();
       }
     }
 
     function nextCard() {
       if (matchGame.style.display === "block") {
         if (matchNextBtn.style.display !== "none" && !matchNextBtn.disabled) {
-          currentSetIndex++;
-          if (currentSetIndex >= cardSets.length) {
-            resultMessage.textContent = "You completed all sets! Restarting from first set.";
-            currentSetIndex = 0;
+          currentIndex++;
+          if (currentIndex >= totalCards) {
+            resultMessage.textContent = "You completed all cards! Restarting from first card.";
+            currentIndex = 0;
           }
-          cards = cardSets[currentSetIndex];
-          currentIndex = 0;
           flipped = false;
           showFlashcards();
           updateFlashcard();
         }
       } else {
-        if (currentIndex < cards.length - 1) {
+        if (currentIndex < totalCards - 1) {
           currentIndex++;
           flipped = false;
           updateFlashcard();
+          // Check if the next card would trigger a match game (i.e., after the 5th card)
+          if (currentIndex % 5 === 0 || currentIndex === totalCards - 1) {
+            startMatchGame();
+          }
         } else {
           startMatchGame();
         }
@@ -384,10 +379,14 @@
 
       matchNextBtn.style.display = "none";
       matchNextBtn.disabled = true;
-      checkBtn.disabled = true; // Disable Check button initially
+      checkBtn.disabled = true;
       resultMessage.textContent = "";
 
-      cards.forEach((card) => {
+      // Select the last 5 cards (or fewer if at the end)
+      const startIdx = Math.max(0, currentIndex - 4);
+      matchTestCards = allCards.slice(startIdx, currentIndex + 1);
+
+      matchTestCards.forEach((card) => {
         const drop = document.createElement("div");
         drop.className = "match-card";
         drop.setAttribute("data-kn", card.kn);
@@ -398,7 +397,7 @@
         kannadaRow.appendChild(drop);
       });
 
-      const shuffledHindi = cards
+      const shuffledHindi = matchTestCards
         .map(a => ({...a}))
         .sort(() => Math.random() - 0.5);
 
@@ -451,10 +450,9 @@
 
       dragged = null;
 
-      // Check if all drop targets have overlays
       const drops = kannadaRow.querySelectorAll(".match-card");
       const allFilled = Array.from(drops).every(drop => drop.querySelector('.overlay'));
-      checkBtn.disabled = !allFilled; // Enable Check button only if all cards have overlays
+      checkBtn.disabled = !allFilled;
     }
 
     function checkMatch() {
@@ -470,7 +468,7 @@
           return;
         }
         const hi = overlay.textContent;
-        const card = cards.find(c => c.kn === kn);
+        const card = matchTestCards.find(c => c.kn === kn);
         if (card.hi === hi) {
           drop.classList.add("correct");
         } else {
@@ -501,7 +499,7 @@
         }
         drop.classList.remove('correct');
       });
-      checkBtn.disabled = true; // Disable Check button after reset
+      checkBtn.disabled = true;
       matchNextBtn.style.display = "none";
       matchNextBtn.disabled = true;
       resultMessage.textContent = "";
@@ -509,6 +507,5 @@
 
     updateFlashcard();
   </script>
-
 </body>
 </html>
