@@ -2,16 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Kannada Flashcard Game</title>
   <style>
-    body {
+    html, body {
+      margin: 0; padding: 0;
       font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 0;
       background: #f9f9f9;
       color: #333;
-      text-align: center;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
 
     h1, h2 {
@@ -19,11 +21,13 @@
       color: #2c3e50;
     }
 
+    /* Shrink flashcard container height to avoid pushing buttons too low */
     .flashcard-container {
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 80vh;
+      height: 65vh; /* reduced from 80vh */
+      max-width: 100%;
     }
 
     .flashcard {
@@ -40,6 +44,7 @@
       font-weight: bold;
       cursor: pointer;
       transition: transform 0.3s ease;
+      user-select: none;
     }
 
     .flashcard:hover {
@@ -47,7 +52,8 @@
     }
 
     .navigation-buttons {
-      margin: 20px 0;
+      margin: 12px 0 30px; /* add bottom margin to push buttons up */
+      flex-shrink: 0;
     }
 
     button {
@@ -126,6 +132,7 @@
       font-size: 14px;
       color: #666;
       margin-top: 16px;
+      margin-bottom: 30px;
     }
 
     /* Progress bar container */
@@ -138,6 +145,7 @@
       margin: 12px auto 24px;
       overflow: hidden;
       box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+      flex-shrink: 0;
     }
 
     /* Progress bar fill */
@@ -205,12 +213,22 @@
   </div>
 
   <script>
-    const cards = [
-      { kn: 'ಅ', hi: 'अ' }, { kn: 'ಆ', hi: 'आ' },
-      { kn: 'ಇ', hi: 'इ' }, { kn: 'ಈ', hi: 'ई' },
-      { kn: 'ಉ', hi: 'उ' }
+    // Multiple sets of cards for demo
+    const cardSets = [
+      [
+        { kn: 'ಅ', hi: 'अ' }, { kn: 'ಆ', hi: 'आ' },
+        { kn: 'ಇ', hi: 'इ' }, { kn: 'ಈ', hi: 'ई' },
+        { kn: 'ಉ', hi: 'उ' }
+      ],
+      [
+        { kn: 'ಋ', hi: 'ऋ' }, { kn: 'ಎ', hi: 'ए' },
+        { kn: 'ಏ', hi: 'ऐ' }, { kn: 'ಐ', hi: 'ऐ' },
+        { kn: 'ಒ', hi: 'ओ' }
+      ]
     ];
 
+    let currentSetIndex = 0;
+    let cards = cardSets[currentSetIndex];
     let currentIndex = 0;
     let flipped = false;
 
@@ -230,7 +248,7 @@
       const card = cards[currentIndex];
       flashcard.textContent = flipped ? card.hi : card.kn;
       flashcard.setAttribute('aria-label', `Flashcard displaying ${flipped ? 'Hindi' : 'Kannada'} character ${flashcard.textContent}`);
-      progressText.textContent = `Card ${currentIndex + 1} / ${cards.length}`;
+      progressText.textContent = `Card ${currentIndex + 1} / ${cards.length} (Set ${currentSetIndex + 1} / ${cardSets.length})`;
       const progressPercent = ((currentIndex) / (cards.length - 1)) * 100;
       progressBar.style.width = `${progressPercent}%`;
 
@@ -257,10 +275,8 @@
         flipped = false;
         updateFlashcard();
 
-        // Hide match game Next button for next time
         matchNextBtn.style.display = "none";
         matchNextBtn.disabled = true;
-
         return;
       }
 
@@ -268,14 +284,27 @@
         currentIndex--;
         flipped = false;
         updateFlashcard();
+      } else if (currentSetIndex > 0) {
+        // Go back to previous set's last card
+        currentSetIndex--;
+        cards = cardSets[currentSetIndex];
+        currentIndex = cards.length - 1;
+        flipped = false;
+        updateFlashcard();
       }
     }
 
     function nextCard() {
       if (matchGame.style.display === "block") {
-        // In match game, next button visible only after correct, so just proceed normally
-        if (currentIndex < cards.length - 1) {
-          currentIndex++;
+        if (matchNextBtn.style.display !== "none" && !matchNextBtn.disabled) {
+          // Proceed to next set of cards after match success
+          currentSetIndex++;
+          if (currentSetIndex >= cardSets.length) {
+            alert("You completed all sets! Restarting from first set.");
+            currentSetIndex = 0;
+          }
+          cards = cardSets[currentSetIndex];
+          currentIndex = 0;
           flipped = false;
           showFlashcards();
           updateFlashcard();
@@ -321,80 +350,134 @@
       kannadaRow.innerHTML = '';
       hindiRow.innerHTML = '';
 
-      // Reset Next button
       matchNextBtn.style.display = "none";
       matchNextBtn.disabled = true;
 
       cards.forEach((card) => {
         const drop = document.createElement("div");
         drop.className = "match-card";
+        drop.setAttribute("data-kn", card.kn);
         drop.textContent = card.kn;
-        drop.dataset.answer = card.hi;
-        drop.ondragover = (e) => e.preventDefault();
-        drop.ondrop = function(e) {
-          e.preventDefault();
-          const data = e.dataTransfer.getData("text");
-          if (!this.querySelector('.overlay')) {
-            const overlay = document.createElement("div");
-            overlay.className = "overlay";
-            overlay.textContent = data;
-            this.appendChild(overlay);
-
-            // Disable this draggable after placement
-            const dragged = document.querySelector(`.draggable[data-hi='${data}']`);
-            if (dragged) dragged.setAttribute("draggable", false);
-          }
-        };
+        drop.setAttribute('aria-label', `Drop target for Kannada character ${card.kn}`);
+        drop.addEventListener('dragover', allowDrop);
+        drop.addEventListener('drop', dropHandler);
         kannadaRow.appendChild(drop);
       });
 
-      // Shuffle Hindi cards
-      const shuffled = [...cards].sort(() => Math.random() - 0.5);
-      shuffled.forEach(card => {
-        const draggable = document.createElement("div");
-        draggable.className = "match-card draggable";
-        draggable.textContent = card.hi;
-        draggable.draggable = true;
-        draggable.dataset.hi = card.hi;
-        draggable.ondragstart = (e) => {
-          e.dataTransfer.setData("text", card.hi);
-        };
-        hindiRow.appendChild(draggable);
+      // Shuffle Hindi cards for random order
+      const shuffledHindi = cards
+        .map(a => ({...a}))
+        .sort(() => Math.random() - 0.5);
+
+      shuffledHindi.forEach((card) => {
+        const drag = document.createElement("div");
+        drag.className = "match-card draggable";
+        drag.setAttribute("draggable", true);
+        drag.setAttribute("data-hi", card.hi);
+        drag.textContent = card.hi;
+        drag.setAttribute('aria-label', `Draggable Hindi character ${card.hi}`);
+        drag.addEventListener("dragstart", dragStart);
+        hindiRow.appendChild(drag);
       });
     }
 
+    // Drag and Drop handlers
+    let dragged = null;
+
+    function dragStart(e) {
+      dragged = e.target;
+      e.dataTransfer.setData("text", e.target.getAttribute("data-hi"));
+      setTimeout(() => {
+        e.target.style.visibility = "hidden";
+      }, 0);
+    }
+
+    function allowDrop(e) {
+      e.preventDefault();
+    }
+
+    function dropHandler(e) {
+      e.preventDefault();
+      const dropTarget = e.target;
+
+      if (!dragged) return;
+
+      // Only allow dropping on Kannada card if not already matched
+      if (dropTarget.classList.contains('correct')) return;
+
+      // Remove any existing child in dropTarget (replace dropped Hindi)
+      const existing = dropTarget.querySelector('.overlay');
+      if (existing) {
+        existing.remove();
+      }
+
+      // Create overlay with dragged Hindi char
+      const hiChar = dragged.getAttribute("data-hi");
+      const overlay = document.createElement('div');
+      overlay.className = 'overlay';
+      overlay.textContent = hiChar;
+      dropTarget.appendChild(overlay);
+
+      // Show dragged back since drop is complete
+      dragged.style.visibility = "visible";
+
+      // Move dragged element back to Hindi row to allow multiple attempts
+      dragged.style.position = 'relative';
+      dragged.style.left = '0px';
+      dragged.style.top = '0px';
+
+      dragged = null;
+    }
+
     function checkMatch() {
-      const zones = document.querySelectorAll('#kannadaRow .match-card');
       let allCorrect = true;
 
-      zones.forEach(zone => {
-        const overlay = zone.querySelector('.overlay');
-        if (overlay && overlay.textContent === zone.dataset.answer) {
-          zone.classList.add('correct');
-        } else {
-          zone.classList.remove('correct');
+      const drops = kannadaRow.querySelectorAll(".match-card");
+      drops.forEach(drop => {
+        const kn = drop.getAttribute("data-kn");
+        const overlay = drop.querySelector(".overlay");
+        if (!overlay) {
           allCorrect = false;
+          drop.classList.remove('correct');
+          return;
+        }
+        const hi = overlay.textContent;
+        // Find the card with this Kannada and check Hindi match
+        const card = cards.find(c => c.kn === kn);
+        if (card.hi === hi) {
+          drop.classList.add("correct");
+        } else {
+          allCorrect = false;
+          drop.classList.remove('correct');
         }
       });
 
       if (allCorrect) {
+        alert("All matches are correct! You can proceed to the next set.");
         checkBtn.disabled = true;
         matchNextBtn.style.display = "inline-block";
         matchNextBtn.disabled = false;
       } else {
-        matchNextBtn.style.display = "none";
-        matchNextBtn.disabled = true;
+        alert("Some matches are incorrect or missing. Try again or retake.");
       }
     }
 
     function resetMatch() {
-      startMatchGame();
+      // Clear all overlays and remove correct class
+      const drops = kannadaRow.querySelectorAll(".match-card");
+      drops.forEach(drop => {
+        const overlay = drop.querySelector(".overlay");
+        if (overlay) overlay.remove();
+        drop.classList.remove('correct');
+      });
       checkBtn.disabled = false;
       matchNextBtn.style.display = "none";
       matchNextBtn.disabled = true;
     }
 
+    // Initial load
     updateFlashcard();
   </script>
+
 </body>
 </html>
