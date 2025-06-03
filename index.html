@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kannada Flashcard Game</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+      text-align: center;
+    }
+
+    h1, h2 {
+      margin: 16px 0 8px;
+      color: #2c3e50;
+    }
+
+    .flashcard-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 80vh;
+    }
+
+    .flashcard {
+      width: 300px;
+      height: 375px;
+      background-color: #fff;
+      border: 3px solid #3498db;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 120px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+
+    .flashcard:hover {
+      transform: scale(1.03);
+    }
+
+    .navigation-buttons {
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 12px 20px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      background-color: #2980b9;
+      color: white;
+      cursor: pointer;
+      margin: 0 8px;
+    }
+
+    button:hover {
+      background-color: #1c5980;
+    }
+
+    .match-zone {
+      margin: 30px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+      max-width: 1000px;
+    }
+
+    .match-row {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+    }
+
+    .match-card {
+      width: 160px;
+      height: 200px;
+      background-color: #ecf0f1;
+      border: 2px dashed #95a5a6;
+      font-size: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-radius: 14px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .match-card .overlay {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 40px;
+      color: #2c3e50;
+      pointer-events: none;
+    }
+
+    .draggable {
+      border-style: solid;
+      background-color: #fff;
+      cursor: grab;
+    }
+
+    .correct {
+      background-color: #2ecc71 !important;
+      color: #fff;
+      border-color: #27ae60 !important;
+    }
+
+    .instructions {
+      font-size: 14px;
+      color: #666;
+      margin-top: 16px;
+    }
+
+    .progress {
+      font-size: 18px;
+      margin-top: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .flashcard {
+        width: 240px;
+        height: 300px;
+        font-size: 100px;
+      }
+
+      .match-card {
+        width: 140px;
+        height: 160px;
+        font-size: 50px;
+      }
+
+      .match-card .overlay {
+        font-size: 30px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Kannada Flashcard Game</h1>
+  <div class="progress" id="progress">Card 1 / 5</div>
+
+  <div class="flashcard-container" id="flashcardContainer">
+    <div id="flashcard" class="flashcard">ಅ</div>
+  </div>
+
+  <div class="navigation-buttons" id="flashButtons">
+    <button onclick="prevCard()">Previous</button>
+    <button onclick="nextCard()">Next</button>
+  </div>
+
+  <div id="matchGame" style="display: none;">
+    <h2>Match Kannada to Hindi</h2>
+    <div class="match-zone">
+      <div class="match-row" id="kannadaRow"></div>
+      <div class="match-row" id="hindiRow"></div>
+    </div>
+    <div class="navigation-buttons">
+      <button onclick="prevCard()">Prev</button>
+      <button onclick="checkMatch()">Check</button>
+      <button onclick="resetMatch()">Retake</button>
+    </div>
+  </div>
+
+  <div class="instructions">
+    Use ← / → to Navigate | ↑ / ↓ to Flip Card | Match Hindi by dragging to Kannada row
+  </div>
+
+  <script>
+    const cards = [
+      { kn: 'ಅ', hi: 'अ' }, { kn: 'ಆ', hi: 'आ' },
+      { kn: 'ಇ', hi: 'इ' }, { kn: 'ಈ', hi: 'ई' },
+      { kn: 'ಉ', hi: 'उ' }
+    ];
+
+    let currentIndex = 0;
+    let flipped = false;
+
+    const flashcard = document.getElementById("flashcard");
+    const progress = document.getElementById("progress");
+    const flashcardContainer = document.getElementById("flashcardContainer");
+    const flashButtons = document.getElementById("flashButtons");
+    const matchGame = document.getElementById("matchGame");
+    const kannadaRow = document.getElementById("kannadaRow");
+    const hindiRow = document.getElementById("hindiRow");
+
+    function updateFlashcard() {
+      const card = cards[currentIndex];
+      flashcard.textContent = flipped ? card.hi : card.kn;
+      progress.textContent = `Card ${currentIndex + 1} / ${cards.length}`;
+    }
+
+    function flipCard() {
+      flipped = !flipped;
+      updateFlashcard();
+    }
+
+    function prevCard() {
+      if (matchGame.style.display === "block") {
+        matchGame.style.display = "none";
+        flashcardContainer.style.display = "flex";
+        flashButtons.style.display = "block";
+        currentIndex = cards.length - 1;
+        flipped = false;
+        updateFlashcard();
+        document.querySelector(".progress").style.display = "block";
+        return;
+      }
+
+      if (currentIndex > 0) {
+        currentIndex--;
+        flipped = false;
+        updateFlashcard();
+      }
+    }
+
+    function nextCard() {
+      if (currentIndex < cards.length - 1) {
+        currentIndex++;
+        flipped = false;
+        updateFlashcard();
+      } else {
+        startMatchGame();
+      }
+    }
+
+    flashcard.addEventListener('click', flipCard);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') nextCard();
+      else if (e.key === 'ArrowLeft') prevCard();
+      else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') flipCard();
+    });
+
+    function startMatchGame() {
+      flashcardContainer.style.display = "none";
+      flashButtons.style.display = "none";
+      matchGame.style.display = "block";
+      document.querySelector(".progress").style.display = "none";
+
+      kannadaRow.innerHTML = '';
+      hindiRow.innerHTML = '';
+
+      cards.forEach((card) => {
+        const drop = document.createElement("div");
+        drop.className = "match-card";
+        drop.textContent = card.kn;
+        drop.dataset.answer = card.hi;
+        drop.ondragover = (e) => e.preventDefault();
+        drop.ondrop = function(e) {
+          e.preventDefault();
+          const data = e.dataTransfer.getData("text");
+          if (!this.querySelector('.overlay')) {
+            const overlay = document.createElement("div");
+            overlay.className = "overlay";
+            overlay.textContent = data;
+            this.appendChild(overlay);
+
+            // Disable this draggable after placement
+            const dragged = document.querySelector(`.draggable[data-hi='${data}']`);
+            if (dragged) dragged.setAttribute("draggable", false);
+          }
+        };
+        kannadaRow.appendChild(drop);
+      });
+
+      // Shuffle Hindi cards
+      const shuffled = [...cards].sort(() => Math.random() - 0.5);
+      shuffled.forEach(card => {
+        const draggable = document.createElement("div");
+        draggable.className = "match-card draggable";
+        draggable.textContent = card.hi;
+        draggable.draggable = true;
+        draggable.dataset.hi = card.hi;
+        draggable.ondragstart = (e) => {
+          e.dataTransfer.setData("text", card.hi);
+        };
+        hindiRow.appendChild(draggable);
+      });
+    }
+
+    function checkMatch() {
+      const zones = document.querySelectorAll('#kannadaRow .match-card');
+      zones.forEach(zone => {
+        const overlay = zone.querySelector('.overlay');
+        if (overlay && overlay.textContent === zone.dataset.answer) {
+          zone.classList.add('correct');
+        } else {
+          zone.classList.remove('correct');
+        }
+      });
+    }
+
+    function resetMatch() {
+      startMatchGame();
+    }
+
+    updateFlashcard();
+  </script>
+</body>
+</html>
