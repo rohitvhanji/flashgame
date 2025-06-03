@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Kannada Flashcard Game</title>
+  <title>Duolingo</title>
   <style>
     html, body {
       margin: 0; padding: 0;
@@ -193,8 +193,6 @@
 </head>
 <body>
 
-  <h1>Kannada Flashcard Game</h1>
-
   <div class="progress-bar-container" aria-label="Flashcard progress">
     <div class="progress-bar-fill" id="progressBar"></div>
   </div>
@@ -210,7 +208,7 @@
   </div>
 
   <div id="matchGame" style="display: none;">
-    <h2>Match Kannada to Hindi</h2>
+    <h2>Revision</h2>
     <div class="match-zone" aria-label="Matching game area">
       <div class="match-row" id="kannadaRow" aria-label="Kannada characters, drop targets"></div>
       <div class="match-row" id="hindiRow" aria-label="Hindi characters, draggable items"></div>
@@ -225,7 +223,7 @@
   </div>
 
   <div class="instructions" aria-live="polite">
-    Use ← / → to Navigate | ↑ / ↓ to Flip Card | Match Hindi by dragging to Kannada row
+    Use ← / → to Navigate | ↑ / ↓ to Flip Card
   </div>
 
   <script>
@@ -484,12 +482,12 @@
       });
 
       if (allCorrect) {
-        resultMessage.textContent = "All matches are correct! You can proceed to the next set.";
+        resultMessage.textContent = "All matches are correct! You can proceed to the next level.";
         checkBtn.disabled = true;
         matchNextBtn.style.display = "inline-block";
         matchNextBtn.disabled = false;
       } else {
-        resultMessage.textContent = "Some matches are incorrect or missing. Try again";
+        resultMessage.textContent = "Some matches are incorrect. Try again";
       }
     }
 
